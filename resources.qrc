@@ -1,0 +1,8 @@
+<!DOCTYPE RCC>
+<RCC version="1.0">
+    <qresource>
+        <file>resources/images/main_menu_background.png</file>
+        <file>resources/images/settings_icon.png</file>
+        <!-- Добавьте другие ресурсы, если необходимо -->
+    </qresource>
+</RCC>
