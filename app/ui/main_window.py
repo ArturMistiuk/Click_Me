@@ -1,14 +1,15 @@
 from PyQt5.QtWidgets import QMainWindow, QStackedWidget, QApplication, QDesktopWidget
 from ui.main_menu import MainMenu
 from ui.settings import Settings
+from ui.choosing_window import ChoosingWindow
 import sys
 
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Hentai Clicker")
-        self.setGeometry(600, 200, 1200, 800)
+        self.setWindowTitle("Click Me")
+        self.setFixedSize(1280, 720)
         self.center_on_screen()  # Центрируем окно на экране
 
         self.stacked_widget = QStackedWidget()
@@ -16,9 +17,11 @@ class MainWindow(QMainWindow):
 
         self.main_menu = MainMenu(self)
         self.settings = Settings(self)
+        self.choosing_window = ChoosingWindow(self)
 
         self.stacked_widget.addWidget(self.main_menu)
         self.stacked_widget.addWidget(self.settings)
+        self.stacked_widget.addWidget(self.choosing_window)
 
         self.show_main_menu()
 
