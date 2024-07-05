@@ -1,7 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy
-from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, pyqtSignal, QPoint
-from PyQt5.QtGui import QPixmap
-
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, QApplication
+from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, pyqtSignal
+from PyQt5.QtGui import QPixmap, QIcon
+from ui.game_window import GameWindow  # Импортируем окно игры
 
 class ChoosingWindow(QWidget):
     def __init__(self, main_window):
@@ -12,7 +12,7 @@ class ChoosingWindow(QWidget):
     def init_ui(self):
         # Установка фонового изображения
         self.background_label = QLabel(self)
-        pixmap = QPixmap('resources/images/choosing_window_background.png')  # Путь к фоновому изображению
+        pixmap = QPixmap('resources/images/choosing_window_background.png')
         if pixmap.isNull():
             print("Failed to load background image.")
         else:
@@ -55,6 +55,30 @@ class ChoosingWindow(QWidget):
         self.setup_animation(self.button2)
         self.setup_animation(self.button3)
 
+        # Добавляем кнопку выхода
+        exit_button = QPushButton()
+        exit_button.setIcon(QIcon('resources/images/exit_icon.png'))
+        exit_button.setFixedSize(55, 55)  # Устанавливаем фиксированный размер кнопки
+        exit_button.clicked.connect(self.back_to_menu)
+
+        exit_button_layout = QHBoxLayout()
+        exit_button_layout.addStretch()
+        exit_button_layout.addWidget(exit_button)
+
+        layout.addLayout(exit_button_layout)
+
+        # Соединяем сигналы клика на кнопках с обработчиком перехода к игре
+        self.button1.clicked.connect(lambda: self.start_game("character_1"))
+        self.button2.clicked.connect(lambda: self.start_game("character_2"))
+        self.button3.clicked.connect(lambda: self.start_game("character_3"))
+
+    def back_to_menu(self):
+        self.main_window.show_main_menu()
+
+    def start_game(self, character_name):
+        # Создаем окно игры с выбранным персонажем и переходим к нему
+        self.main_window.show_game_window(character_name)
+
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # Растягиваем фоновое изображение на весь виджет
@@ -68,31 +92,40 @@ class ChoosingWindow(QWidget):
         self.button3.setFixedSize(button_size, button_size)
 
     def setup_animation(self, button):
-        hover_animation = QPropertyAnimation(button, b"pos")
-        hover_animation.setDuration(200)
-        hover_animation.setEasingCurve(QEasingCurve.OutCubic)
+        button.animation = QPropertyAnimation(button, b"pos")
+        button.animation.setDuration(20)
+        button.animation.setEasingCurve(QEasingCurve.OutCubic)
 
-        def animate_down():
+        def animate_button():
+            if button.animation.state() == QPropertyAnimation.Running:
+                button.animation.stop()
             start_pos = button.pos()
-            end_pos = start_pos + QPoint(0, 10)  # Смещаем вниз на 10 пикселей
-            hover_animation.setStartValue(start_pos)
-            hover_animation.setEndValue(end_pos)
-            hover_animation.start()
+            if button.hovered:
+                end_pos = start_pos - QPoint(0, 5)  # Смещаем вверх на 5 пикселей при наведении
+            else:
+                end_pos = start_pos + QPoint(0, 5)  # Возвращаемся обратно на 5 пикселей при уходе
+            button.animation.setStartValue(start_pos)
+            button.animation.setEndValue(end_pos)
+            button.animation.start()
 
-        def animate_up():
-            start_pos = button.pos()
-            end_pos = start_pos - QPoint(0, 10)  # Возвращаемся обратно на исходное место
-            hover_animation.setStartValue(start_pos)
-            hover_animation.setEndValue(end_pos)
-            hover_animation.start()
+        button.hovered = False
 
-        button.enterEvent = lambda event: animate_down()
-        button.leaveEvent = lambda event: animate_up()
+        def on_enter(event):
+            button.hovered = True
+            animate_button()
+
+        def on_leave(event):
+            button.hovered = False
+            animate_button()
+
+        button.enterEvent = on_enter
+        button.leaveEvent = on_leave
+
+        button.animation.finished.connect(lambda: button.setGeometry(button.pos().x(), button.pos().y(), button.width(), button.height()))
 
 
 class ClickableImage(QLabel):
-    """ QLabel, которая является кликабельным изображением """
-    clicked = pyqtSignal()
+    clicked = pyqtSignal()  # Определение собственного сигнала clicked
 
     def __init__(self, image_path, size, parent=None):
         super().__init__(parent)
@@ -102,5 +135,5 @@ class ClickableImage(QLabel):
         self.setScaledContents(True)
 
     def mousePressEvent(self, event):
-        self.clicked.emit()
+        self.clicked.emit()  # Вызываем сигнал clicked при клике на изображение
         super().mousePressEvent(event)
