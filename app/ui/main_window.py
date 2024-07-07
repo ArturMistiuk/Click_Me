@@ -16,6 +16,10 @@ class MainWindow(QMainWindow):
         self.setFixedSize(1280, 720)
         self.center_on_screen()
 
+        self.setCursor(Qt.PointingHandCursor)  # Устанавливаем курсор руки по умолчанию
+        grabbing_pixmap = QPixmap("resources/images/grab.png").scaled(16, 16, Qt.KeepAspectRatio)
+        self.grabbing_cursor = QCursor(grabbing_pixmap)
+
         self.stacked_widget = QStackedWidget()
         self.setCentralWidget(self.stacked_widget)
 

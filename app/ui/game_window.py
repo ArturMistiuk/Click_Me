@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PyQt5.QtGui import QPixmap, QCursor
 from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtMultimedia import QSound
 from ui.QProgressBar import ProgressBar
 from ui.click_handler import ClickHandler
 from ui.character import Character
@@ -25,6 +26,10 @@ class GameWindow(QWidget):
         self.init_ui()
         self.variant_timer = QTimer(self)
         self.variant_timer.timeout.connect(self.update_variant_image)
+
+        # Звук при клике
+        self.text_sound = QSound("resources/sounds/text_sound.wav")
+        self.text_sound.play()
 
     def init_cursors(self):
         # Загрузите пути к изображениям курсоров
@@ -55,8 +60,6 @@ class GameWindow(QWidget):
         self.character_label.mousePressEvent = self.handle_character_mouse_press
         self.character_label.mouseReleaseEvent = self.handle_character_mouse_release
 
-
-
     def load_character(self, character_name):
         character_data = {
             "character_1": Character("character_1", [
@@ -71,15 +74,13 @@ class GameWindow(QWidget):
                 "resources/images/character_1/10.png",
                 "resources/images/character_1/11.png",
                 "resources/images/character_1/12.png",
-            ], [70, 80, 90, 100, 110, 120, 150, 200, 230, 260, 50000], {
+            ], [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 50000], {
                 3: [
                     "resources/images/character_1/5.png",
                     "resources/images/character_1/5(1).png",
                     "resources/images/character_1/5(2).png",
                     "resources/images/character_1/5(3).png",
                     "resources/images/character_1/5(4).png",
-                    "resources/images/character_1/5(5).png",
-                    "resources/images/character_1/5(6).png",
                 ],
                 4: [
                     "resources/images/character_1/6.png",
@@ -91,7 +92,6 @@ class GameWindow(QWidget):
                     "resources/images/character_1/6(6).png",
                     "resources/images/character_1/6(7).png",
                     "resources/images/character_1/6(8).png",
-                    "resources/images/character_1/6(9).png",
                 ],
                 5: [
                     "resources/images/character_1/7.png",
@@ -103,9 +103,6 @@ class GameWindow(QWidget):
                     "resources/images/character_1/7(6).png",
                     "resources/images/character_1/7(7).png",
                     "resources/images/character_1/7(8).png",
-                    "resources/images/character_1/7(9).png",
-                    "resources/images/character_1/7(10).png",
-                    "resources/images/character_1/7(11).png",
                 ],
                 6: [
                     "resources/images/character_1/8.png",
@@ -117,7 +114,6 @@ class GameWindow(QWidget):
                 8: [
                     "resources/images/character_1/10.png",
                     "resources/images/character_1/10(1).png",
-                    "resources/images/character_1/10(2).png",
                 ],
                 9: [
                     "resources/images/character_1/11.png",
@@ -130,14 +126,58 @@ class GameWindow(QWidget):
                 "resources/images/character_2/1.png",
                 "resources/images/character_2/2.png",
                 "resources/images/character_2/3.png",
-                "resources/images/character_2/4.png"
-            ], [15, 25, 35]),
+                "resources/images/character_2/4.png",
+            ], [10, 10, 10, 10], {
+                3: [
+                    "resources/images/character_1/4.png",
+                    "resources/images/character_1/4(1).png",
+                    "resources/images/character_1/4(2).png",
+                ],
+            }),
             "character_3": Character("character_3", [
                 "resources/images/character_3/1.png",
                 "resources/images/character_3/2.png",
                 "resources/images/character_3/3.png",
-                "resources/images/character_3/4.png"
-            ], [20, 30, 40])
+                "resources/images/character_3/4.png",
+                "resources/images/character_3/5.png",
+                "resources/images/character_3/6.png",
+                "resources/images/character_3/7.png",
+                "resources/images/character_3/8.png",
+            ], [10, 10, 10, 10, 10, 10, 10, 10], {
+                3: [
+                    "resources/images/character_3/4.png",
+                    "resources/images/character_3/4(1).png",
+                    "resources/images/character_3/4(2).png",
+                ],
+                4: [
+                    "resources/images/character_3/5.png",
+                    "resources/images/character_3/5(1).png",
+                    "resources/images/character_3/5(2).png",
+                    "resources/images/character_3/5(3).png",
+                ],
+                5: [
+                    "resources/images/character_3/6.png",
+                    "resources/images/character_3/6(1).png",
+                    "resources/images/character_3/6(2).png",
+                    "resources/images/character_3/6(3).png",
+                    "resources/images/character_3/6(4).png",
+                ],
+                6: [
+                    "resources/images/character_3/7.png",
+                    "resources/images/character_3/7(1).png",
+                    "resources/images/character_3/7(2).png",
+                    "resources/images/character_3/7(3).png",
+                ],
+                7: [
+                    "resources/images/character_3/8.png",
+                    "resources/images/character_3/8(1).png",
+                    "resources/images/character_3/8(2).png",
+                    "resources/images/character_3/8(3).png",
+                    "resources/images/character_3/8(4).png",
+                    "resources/images/character_3/8(5).png",
+                    "resources/images/character_3/8(6).png",
+                ],
+            })
         }
         return character_data.get(character_name, None)
 
@@ -167,6 +207,7 @@ class GameWindow(QWidget):
     def handle_character_click(self, event):
         try:
             if self.first_click_count < 2:
+                self.text_sound.play()  # Воспроизведение звука при клике на первые три картинки
                 self.first_click_count += 1
                 self.character.advance_stage()
                 print(f"Character advanced to stage {self.character.current_stage}")  # Для отладки
@@ -194,7 +235,7 @@ class GameWindow(QWidget):
 
     def start_variant_timer(self):
         try:
-            self.variant_timer.start(1000)
+            self.variant_timer.start(400)
         except Exception as e:
             print(f"Error starting variant timer: {e}")
 

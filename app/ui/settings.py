@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QCheckBox, QLabel
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QPixmap, QPainter
 
+
 class Settings(QWidget):
     def __init__(self, main_window):
         super().__init__()
