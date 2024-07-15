@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QCheckBox, QLabel, QComboBox, QApplication, QHBoxLayout, QSlider
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QCheckBox, QLabel, QComboBox, QHBoxLayout, QSlider, QApplication
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFont, QPixmap, QPainter
+from PyQt5.QtGui import QFont, QPixmap, QPainter, QIcon
+from PyQt5.QtCore import QSettings
 
 
 class Settings(QWidget):
@@ -8,33 +9,59 @@ class Settings(QWidget):
         super().__init__()
         self.main_window = main_window
         self.background_image = QPixmap("resources/images/settings_background.png")
+        self.setWindowTitle("Settings")
+        settings_icon = QIcon("resources/images/logo_icon.png")
+        self.setWindowIcon(settings_icon)
+        self.is_sound_muted = False
+        self.is_effects_muted = False
+        self.fullscreen = False
+        self.settings = QSettings('MistiukCreations', 'ClickMe')
         self.init_ui()
-        self.is_sound_muted = False  # Переменная для отслеживания состояния звука
 
     def init_ui(self):
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)  # Убираем отступы по краям
+        layout.setContentsMargins(0, 0, 0, 0)
 
-        # Выпадающее меню для выбора разрешения экрана
-        resolution_label = QLabel("Resolution:")
-        resolution_label.setFont(QFont("Arial", 16, QFont.Bold))
-        layout.addWidget(resolution_label, alignment=Qt.AlignCenter)
-
-        self.resolution_combo = QComboBox()
-        self.resolution_combo.addItem("800x600")
-        self.resolution_combo.addItem("1024x768")
-        self.resolution_combo.addItem("1280x720")
-        self.resolution_combo.addItem("1280x1024")
-        self.resolution_combo.addItem("1366x768")
-        self.resolution_combo.addItem("1440x900")
-        self.resolution_combo.addItem("1600x900")
-        self.resolution_combo.setCurrentText("1280x720")
-        self.resolution_combo.setFont(QFont("Arial", 14))
+        self.add_header(layout, "Resolution:")
+        self.resolution_combo = self.create_resolution_combo()
         layout.addWidget(self.resolution_combo, alignment=Qt.AlignCenter)
-
         layout.addSpacing(20)
 
-        # Флажок для выбора полноэкранного режима с надписью "OR F"
+        self.add_fullscreen_checkbox(layout)
+        layout.addSpacing(20)
+
+        self.add_header(layout, "Music:")
+        self.volume_slider = self.create_slider(15)
+        self.mute_button = self.create_button("Mute Music", self.mute_all_sounds)
+        layout.addWidget(self.volume_slider, alignment=Qt.AlignCenter)
+        layout.addWidget(self.mute_button, alignment=Qt.AlignCenter)
+        layout.addSpacing(20)
+
+        self.add_header(layout, "Effects Sound:")
+        self.effects_volume_slider = self.create_slider(80)
+        self.mute_effects_button = self.create_button("Mute Effects Sounds", self.mute_effects_sounds)
+        layout.addWidget(self.effects_volume_slider, alignment=Qt.AlignCenter)
+        layout.addWidget(self.mute_effects_button, alignment=Qt.AlignCenter)
+        layout.addSpacing(40)
+
+        self.add_control_buttons(layout)
+        self.setLayout(layout)
+        self.load_settings()
+
+    def add_header(self, layout, text):
+        label = QLabel(text)
+        label.setFont(QFont("Arial", 16, QFont.Bold))
+        layout.addWidget(label, alignment=Qt.AlignCenter)
+
+    def create_resolution_combo(self):
+        combo = QComboBox()
+        resolutions = ["800x600", "1024x768", "1280x720", "1280x1024", "1366x768", "1440x900", "1600x900"]
+        combo.addItems(resolutions)
+        combo.setCurrentText("1280x720")
+        combo.setFont(QFont("Arial", 14))
+        return combo
+
+    def add_fullscreen_checkbox(self, layout):
         fullscreen_layout = QHBoxLayout()
         fullscreen_label = QLabel("Fullscreen")
         fullscreen_label.setFont(QFont("Arial", 14))
@@ -54,57 +81,42 @@ class Settings(QWidget):
         layout.addLayout(fullscreen_layout)
         layout.addLayout(f_layout)
 
-        layout.addSpacing(20)
+    def create_slider(self, initial_value):
+        slider = QSlider(Qt.Horizontal)
+        slider.setRange(0, 100)
+        slider.setValue(initial_value)
+        slider.setFont(QFont("Arial", 14))
+        slider.setMinimumWidth(300)
+        return slider
 
-        # Надпись "Sound"
-        sounds_label = QLabel("Sound:")
-        sounds_label.setFont(QFont("Arial", 16, QFont.Bold))
-        layout.addWidget(sounds_label, alignment=Qt.AlignCenter)
+    def create_button(self, text, callback):
+        button = QPushButton(text)
+        button.setFont(QFont("Arial", 14))
+        button.clicked.connect(callback)
+        return button
 
-        # Ползунок для регулировки громкости
-        self.volume_slider = QSlider(Qt.Horizontal)
-        self.volume_slider.setRange(0, 100)  # Устанавливаем диапазон от 0 до 100
-        self.volume_slider.setValue(15)  # Устанавливаем начальное значение громкости
-        self.volume_slider.setFont(QFont("Arial", 14))
-        self.volume_slider.setMinimumWidth(300)  # Устанавливаем минимальную ширину ползунка
-
-        # Кнопка отключения всех звуков
-        self.mute_button = QPushButton("Mute All Sounds")
-        self.mute_button.setFont(QFont("Arial", 14))
-        self.mute_button.clicked.connect(self.mute_all_sounds)  # Подключаем обработчик событий
-
-        layout.addWidget(self.volume_slider, alignment=Qt.AlignCenter)
-        layout.addWidget(self.mute_button, alignment=Qt.AlignCenter)
-
-        layout.addSpacing(40)
-
-        # Горизонтальный layout для кнопок
+    def add_control_buttons(self, layout):
         button_layout = QVBoxLayout()
-
-        # Кнопка сохранения настроек
-        save_button = QPushButton("Save")
-        save_button.setFont(QFont("Arial", 16))
-        save_button.clicked.connect(self.save_settings)
+        save_button = self.create_button("Save", self.save_settings)
+        back_button = self.create_button("Back to Menu", self.back_to_menu)
         button_layout.addWidget(save_button, alignment=Qt.AlignHCenter)
-
-        # Кнопка возврата в главное меню
-        back_button = QPushButton("Back to Menu")
-        back_button.setFont(QFont("Arial", 16))
-        back_button.clicked.connect(self.back_to_menu)
         button_layout.addWidget(back_button, alignment=Qt.AlignHCenter)
-
         layout.addLayout(button_layout)
-
-        self.setLayout(layout)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawPixmap(self.rect(), self.background_image)
 
     def save_settings(self):
-        fullscreen = self.fullscreen_checkbox.isChecked()
+        self.fullscreen = self.fullscreen_checkbox.isChecked()
+        self.settings.setValue('fullscreen', self.fullscreen)
+        self.settings.setValue('resolution', self.resolution_combo.currentText())
+        self.settings.setValue('volume', self.volume_slider.value())
+        self.settings.setValue('effects_volume', self.effects_volume_slider.value())
+        self.settings.setValue('sound_muted', self.is_sound_muted)
+        self.settings.setValue('effects_muted', self.is_effects_muted)
 
-        if fullscreen:
+        if self.fullscreen:
             self.main_window.setWindowFlag(Qt.WindowStaysOnTopHint, True)
             self.main_window.showFullScreen()
         else:
@@ -115,13 +127,24 @@ class Settings(QWidget):
             self.main_window.showNormal()
             self.main_window.center_on_screen()
 
-        # Устанавливаем громкость на основе значения ползунка
-        volume = self.volume_slider.value()
-        if self.main_window.player is not None:
-            self.main_window.player.setVolume(volume)
+        if not self.is_sound_muted:
+            volume = self.volume_slider.value()
+            if self.main_window.player is not None:
+                self.main_window.player.setVolume(volume)
 
-        # Обновляем окно для применения изменений флагов
+        if not self.is_effects_muted:
+            effects_volume = self.effects_volume_slider.value()
+            self.main_window.set_effects_volume(effects_volume)
+
         self.main_window.show()
+
+    def load_settings(self):
+        self.fullscreen_checkbox.setChecked(self.settings.value('fullscreen', False, type=bool))
+        self.resolution_combo.setCurrentText(self.settings.value('resolution', "1280x720", type=str))
+        self.volume_slider.setValue(self.settings.value('volume', 15, type=int))
+        self.effects_volume_slider.setValue(self.settings.value('effects_volume', 80, type=int))
+        self.mute_button.setText("Unmute Music" if self.is_sound_muted else "Mute Music")
+        self.mute_effects_button.setText("Unmute Effects Sounds" if self.is_effects_muted else "Mute Effects Sounds")
 
     def back_to_menu(self):
         self.main_window.show_main_menu()
@@ -129,10 +152,20 @@ class Settings(QWidget):
     def mute_all_sounds(self):
         if self.main_window.player is not None:
             if self.is_sound_muted:
-                self.main_window.player.setVolume(15)  # Включаем звук
+                self.main_window.player.setVolume(self.volume_slider.value())
                 self.is_sound_muted = False
-                self.mute_button.setText("Mute All Sounds")  # Возвращаем текст кнопки
+                self.mute_button.setText("Mute Music")
             else:
-                self.main_window.player.setVolume(0)  # Выключаем звук
+                self.main_window.player.setVolume(0)
                 self.is_sound_muted = True
-                self.mute_button.setText("Unmute All Sounds")  # Изменяем текст кнопки
+                self.mute_button.setText("Unmute Music")
+
+    def mute_effects_sounds(self):
+        if self.is_effects_muted:
+            self.main_window.set_effects_volume(self.effects_volume_slider.value())
+            self.is_effects_muted = False
+            self.mute_effects_button.setText("Mute Effects Sounds")
+        else:
+            self.main_window.set_effects_volume(0)
+            self.is_effects_muted = True
+            self.mute_effects_button.setText("Unmute Effects Sounds")

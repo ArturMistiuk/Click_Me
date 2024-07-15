@@ -1,4 +1,5 @@
 import random
+import json
 
 
 class Character:
@@ -9,9 +10,6 @@ class Character:
             self.stages.append({"image": image_paths[i], "threshold": thresholds[i]})
         self.current_stage = 0
         self.variant_images = variant_images if variant_images else {}
-
-    def get_current_stage(self):
-        return self.stages[self.current_stage]
 
     def advance_stage(self):
         if self.current_stage < len(self.stages) - 1:
