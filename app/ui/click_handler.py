@@ -8,7 +8,7 @@ class ClickHandler(QObject):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.click_count = 0
+        self.click_count = 60000
         self.click_multiplier = 1  # Коэффициент удвоения очков за клик
 
     def on_click(self):
