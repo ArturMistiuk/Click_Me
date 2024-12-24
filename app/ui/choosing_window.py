@@ -1,5 +1,5 @@
 import os
-from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, QApplication
+from PyQt5.QtWidgets import QWidget, QLabel, QVBoxLayout, QHBoxLayout, QSpacerItem, QSizePolicy, QPushButton, QApplication, QMessageBox
 from PyQt5.QtCore import Qt, QPropertyAnimation, QEasingCurve, QPoint, pyqtSignal
 from PyQt5.QtGui import QPixmap, QIcon
 from ui.game_window import GameWindow  # Импортируем окно игры
@@ -13,7 +13,6 @@ CHARACTER_IMAGES = [
     'resources/images/character_3/choice_button.png'
 ]
 EXIT_BUTTON_SIZE = 55
-
 
 class ChoosingWindow(QWidget):
     def __init__(self, main_window):
@@ -59,7 +58,7 @@ class ChoosingWindow(QWidget):
             self.buttons.append(button)
 
         self.buttons[0].clicked.connect(lambda: self.start_game("character_1"))
-        self.buttons[1].clicked.connect(lambda: self.start_game("character_2"))
+        self.buttons[1].clicked.connect(self.show_coming_soon_message)
         self.buttons[2].clicked.connect(lambda: self.start_game("character_3"))
 
     def create_exit_button(self, layout):
@@ -78,6 +77,9 @@ class ChoosingWindow(QWidget):
 
     def start_game(self, character_name):
         self.main_window.show_game_window(character_name)
+
+    def show_coming_soon_message(self):
+        QMessageBox.information(self, "Coming Soon", "Still in the works, darling!")
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -112,7 +114,6 @@ class ChoosingWindow(QWidget):
     def on_button_hover(self, button, animate_button, is_hovered):
         button.hovered = is_hovered
         animate_button()
-
 
 class ClickableImage(QLabel):
     clicked = pyqtSignal()
