@@ -17,7 +17,7 @@ character_data = {
             "resources/images/character_1/11.png",
             "resources/images/character_1/12.png",
         ],
-        "thresholds": [450, 1000, 2200, 4000, 9000, 19000, 40000, 90000, 200000, 600000, 2000000],
+        "thresholds": [500, 1200, 2800, 6000, 10000, 22000, 45000, 100000, 220000, 600000, 2000000000000000000000000000000],
         "variant_images": {
             3: [
                 "resources/images/character_1/5.png",
@@ -98,7 +98,7 @@ character_data = {
             "resources/images/character_3/9.png",
             "resources/images/character_3/10_3.png",
         ],
-        "thresholds": [450, 1000, 2000, 3500, 7200, 15000, 35000, 90000, 200000, 600000],
+        "thresholds": [500, 1200, 2800, 6000, 10000, 22000, 45000, 100000, 200000, 6000000000000000000000],
         "variant_images": {
             3: [
                 "resources/images/character_3/4.png",
