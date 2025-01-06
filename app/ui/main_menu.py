@@ -1,12 +1,16 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, QApplication
+import os
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel, QHBoxLayout, QSpacerItem, QSizePolicy, \
+    QApplication, QMessageBox
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint, QPropertyAnimation, QEasingCurve
 from ui.choosing_window import ChoosingWindow
+
 
 class MainMenu(QWidget):
     def __init__(self, main_window):
         super().__init__()
         self.main_window = main_window
+        self.first_run_flag = 'first_run.txt'  # Flag file to track the first run
         self.init_ui()
 
     def init_ui(self):
@@ -31,6 +35,28 @@ class MainMenu(QWidget):
         self.add_icon_button(main_layout, 'resources/images/exit_icon.png', QApplication.instance().quit)
 
         self.setLayout(main_layout)
+
+        # Show the thank you message only on the first run
+        self.show_thank_you_message()
+
+    def show_thank_you_message(self):
+        """Показ окна с благодарностью, только при первом запуске."""
+        if not os.path.exists(self.first_run_flag):  # Check if the first_run_flag file exists
+            msg = QMessageBox(self)
+            msg.setIcon(QMessageBox.Information)
+            msg.setWindowTitle("Thank You!")
+            msg.setText(
+                "Thank you for your purchase and support!\n\nThe resources gained from this game will be used to create a higher-quality free romantic visual novel that is already in development.\n\nThis game will continue to be actively developed and improved as much as possible.")
+
+            # Set custom icon for the message box
+            #msg.setIconPixmap(QPixmap(r'resources\images\logo.png'))  # Set your custom icon here
+
+            msg.setStandardButtons(QMessageBox.Ok)
+            msg.exec_()
+
+            # Create a file to mark that the message has been shown
+            with open(self.first_run_flag, 'w') as f:
+                f.write("This is the first run.")
 
     def setup_background(self):
         """Настройка фонового изображения."""
@@ -92,6 +118,7 @@ class MainMenu(QWidget):
         self.main_window.stacked_widget.addWidget(choosing_window)
         self.main_window.stacked_widget.setCurrentWidget(choosing_window)
         self.close()
+
 
 class ClickableImage(QLabel):
     """QLabel, которая является кликабельным изображением."""
